@@ -50,7 +50,7 @@ export class TouchControls {
         container.appendChild(this._createVerticalButtons());
         container.appendChild(this._createSprintButton());
 
-        this._batherButton = this._createIconButton("🏊", { right: "16px", top: "16px" }, 64);
+        this._batherButton = this._createIconButton("🏊", { left: "16px", top: "16px" }, 64);
         this._batherButton.addEventListener("pointerdown", (e) => {
             e.preventDefault();
             onBatherToggle();
