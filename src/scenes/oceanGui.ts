@@ -317,7 +317,7 @@ export class OceanGUI {
             buoy_attenuation: this._paramRead("buoy_attenuation"),
             buoy_numSteps: this._paramRead("buoy_numSteps"),
         };
-        
+
         const buoyancy = this._gui.addFolder("Buoyancy");
 
         this._addCheckbox(buoyancy, params, "buoy_enabled", "Enabled");
