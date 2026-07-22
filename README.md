@@ -2,7 +2,7 @@
 
 This is a port to [Babylon.js](https://www.babylonjs.com/) of the great project [FFT-Ocean](https://github.com/gasgiant/FFT-Ocean): all credits to Ivan Pensionerov (https://github.com/gasgiant)!
 
-Link to the demo: https://popov72.github.io/OceanDemo/dist/index.html
+Link to the demo: https://drsounds.github.io/OceanDemo/
 
 You can also browse this demo in the Babylon.js Playground: https://playground.babylonjs.com/#YX6IB8#758
 

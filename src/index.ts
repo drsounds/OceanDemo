@@ -62,4 +62,24 @@ export const babylonInit = async (): Promise<void>  => {
 
 babylonInit().then(() => {
     // scene started rendering, everything is initialized
+}).catch((err) => {
+    console.error(err);
+
+    const message = err instanceof Error ? (err.stack ?? err.message) : String(err);
+
+    const errorDiv = document.createElement("div");
+    errorDiv.style.position = "fixed";
+    errorDiv.style.inset = "0";
+    errorDiv.style.background = "#000";
+    errorDiv.style.color = "#f66";
+    errorDiv.style.fontFamily = "monospace";
+    errorDiv.style.fontSize = "14px";
+    errorDiv.style.padding = "16px";
+    errorDiv.style.boxSizing = "border-box";
+    errorDiv.style.overflow = "auto";
+    errorDiv.style.zIndex = "99999";
+    errorDiv.style.whiteSpace = "pre-wrap";
+    errorDiv.textContent = "Failed to start the demo:\n\n" + message;
+
+    document.body.appendChild(errorDiv);
 });
