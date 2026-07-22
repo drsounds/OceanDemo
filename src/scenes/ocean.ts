@@ -51,6 +51,8 @@ export class Ocean implements CreateSceneClass {
     private _shadowGeneratorBuoy: BABYLON.ShadowGenerator;
     private _glowLayer: BABYLON.GlowLayer;
     private _forceUpdateGlowIntensity: boolean;
+    private _batherView: boolean;
+    private readonly _batherEyeHeight = 0.4;
 
     constructor() {
         this._engine = null as any;
@@ -74,6 +76,7 @@ export class Ocean implements CreateSceneClass {
         this._shadowGeneratorBuoy = null as any;
         this._glowLayer = null as any;
         this._forceUpdateGlowIntensity = true;
+        this._batherView = false;
 
         this._size = 0;
         this._wavesSettings = new WavesSettings();
@@ -116,9 +119,12 @@ export class Ocean implements CreateSceneClass {
         this._camera.attachControl(canvas, true);
 
         const cameraUpdate = this._camera.update.bind(this._camera);
+        const self = this;
         this._camera.update = function() {
             cameraUpdate();
-            if (this.position.y < 1.5) {
+            if (self._batherView) {
+                self._updateBatherCamera(this);
+            } else if (this.position.y < 1.5) {
                 this.position.y = 1.5;
             }
         };
@@ -162,12 +168,15 @@ export class Ocean implements CreateSceneClass {
             switch (kbInfo.type) {
                 case BABYLON.KeyboardEventTypes.KEYDOWN:
                     if (kbInfo.event.key === "Shift") {
-                        this._camera.speed = 10;
+                        this._camera.speed = this._batherView ? 2 : 10;
                     }
                     break;
                 case BABYLON.KeyboardEventTypes.KEYUP:
                     if (kbInfo.event.key === "Shift") {
-                        this._camera.speed = 2;
+                        this._camera.speed = this._batherView ? 1 : 2;
+                    }
+                    if (kbInfo.event.key === "b" || kbInfo.event.key === "B") {
+                        this._setBatherView(!this._batherView);
                     }
                     break;
             }
@@ -216,8 +225,45 @@ export class Ocean implements CreateSceneClass {
             kbInputs.keysRight = [39, 68];
             kbInputs.keysUp = [38, 87];
         }
-        kbInputs.keysDownward = [34, 32];
-        kbInputs.keysUpward = [33, 69];
+        if (this._batherView) {
+            kbInputs.keysDownward = [];
+            kbInputs.keysUpward = [];
+        } else {
+            kbInputs.keysDownward = [34, 32];
+            kbInputs.keysUpward = [33, 69];
+        }
+    }
+
+    private _setBatherView(enabled: boolean): void {
+        this._batherView = enabled;
+        this._camera.speed = enabled ? 1 : 2;
+        this._setCameraKeys();
+
+        if (enabled) {
+            this._camera.position.y = this._buoyancy.getWaterHeight(this._camera.position) + this._batherEyeHeight;
+            this._camera.rotation.z = 0;
+        }
+    }
+
+    // Called every frame (from the camera's own update loop) once bather view is enabled:
+    // pins the camera to swimmer eye-height above the live wave surface and adds a subtle
+    // roll so the horizon gently rocks with the waves, like floating in the water.
+    private _updateBatherCamera(camera: BABYLON.TargetCamera): void {
+        const waterY = this._buoyancy.getWaterHeight(camera.position);
+
+        camera.position.y = BABYLON.Scalar.Lerp(camera.position.y, waterY + this._batherEyeHeight, 0.3);
+
+        const right = camera.getDirection(BABYLON.Axis.X);
+        const d = 0.6;
+        const pLeft = new BABYLON.Vector3(camera.position.x - right.x * d, camera.position.y, camera.position.z - right.z * d);
+        const pRight = new BABYLON.Vector3(camera.position.x + right.x * d, camera.position.y, camera.position.z + right.z * d);
+
+        const hLeft = this._buoyancy.getWaterHeight(pLeft);
+        const hRight = this._buoyancy.getWaterHeight(pRight);
+
+        const roll = BABYLON.Scalar.Clamp(Math.atan2(hRight - hLeft, d * 2), -0.35, 0.35);
+
+        camera.rotation.z = BABYLON.Scalar.Lerp(camera.rotation.z, roll, 0.08);
     }
 
     private _checkSupport(): boolean {
@@ -407,6 +453,8 @@ export class Ocean implements CreateSceneClass {
                 return this._glowLayer !== null;
             case "useZQSD":
                 return this._useZQSD;
+            case "batherView":
+                return this._batherView;
             case "buoy_enabled":
                 return this._buoyancy.enabled;
             case "buoy_attenuation":
@@ -501,6 +549,9 @@ export class Ocean implements CreateSceneClass {
             case "useZQSD":
                 this._useZQSD = !!value;
                 this._setCameraKeys();
+                break;
+            case "batherView":
+                this._setBatherView(!!value);
                 break;
             case "buoy_enabled":
                 this._buoyancy.enabled = !!value;
