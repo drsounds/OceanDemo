@@ -53,7 +53,7 @@ export class Ocean implements CreateSceneClass {
     private _glowLayer: BABYLON.GlowLayer;
     private _forceUpdateGlowIntensity: boolean;
     private _batherView: boolean;
-    private readonly _batherEyeHeight = 0.4;
+    private _batherEyeHeight = 0.4;
     private _touchControls: BABYLON.Nullable<TouchControls>;
 
     constructor() {
@@ -469,6 +469,10 @@ export class Ocean implements CreateSceneClass {
                 return this._useZQSD;
             case "batherView":
                 return this._batherView;
+            case "batherYOffset":
+                return this._batherEyeHeight;
+            case "cameraMinZ":
+                return this._camera.minZ;
             case "buoy_enabled":
                 return this._buoyancy.enabled;
             case "buoy_attenuation":
@@ -566,6 +570,12 @@ export class Ocean implements CreateSceneClass {
                 break;
             case "batherView":
                 this._setBatherView(!!value);
+                break;
+            case "batherYOffset":
+                this._batherEyeHeight = parseFloat(value);
+                break;
+            case "cameraMinZ":
+                this._camera.minZ = parseFloat(value);
                 break;
             case "buoy_enabled":
                 this._buoyancy.enabled = !!value;

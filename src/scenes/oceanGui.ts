@@ -95,6 +95,7 @@ export class OceanGUI {
         this._makeMenuOceanShader();
 
         this._makeMenuBuoyancy();
+        this._makeMenuBather();
     }
 
     private _addList(menu: any, params: any, name: string, friendlyName: string, list: any[]): void {
@@ -317,11 +318,23 @@ export class OceanGUI {
             buoy_attenuation: this._paramRead("buoy_attenuation"),
             buoy_numSteps: this._paramRead("buoy_numSteps"),
         };
-        
+
         const buoyancy = this._gui.addFolder("Buoyancy");
 
         this._addCheckbox(buoyancy, params, "buoy_enabled", "Enabled");
         this._addSlider(buoyancy, params, "buoy_attenuation", "Damping factor", 0, 1, 0.001);
         this._addSlider(buoyancy, params, "buoy_numSteps", "Num steps", 1, 20, 1);
+    }
+
+    private _makeMenuBather(): void {
+        const params = {
+            batherYOffset: this._paramRead("batherYOffset"),
+            cameraMinZ: this._paramRead("cameraMinZ"),
+        };
+
+        const bather = this._gui.addFolder("Bather View");
+
+        this._addSlider(bather, params, "batherYOffset", "Eye height (Y offset)", -0.5, 1.5, 0.01);
+        this._addSlider(bather, params, "cameraMinZ", "Near clip (minZ)", 0.01, 5, 0.01);
     }
 }
