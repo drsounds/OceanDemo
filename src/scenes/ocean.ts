@@ -17,6 +17,7 @@ import { OceanGUI } from "./oceanGui";
 import { OceanMaterial } from "./oceanMaterial";
 import { SkyBox } from "./skyBox";
 import { RTTDebug } from "./tools/RTTDebug";
+import { TouchControls } from "./touchControls";
 import { WavesGenerator } from "./wavesGenerator";
 import { WavesSettings } from "./wavesSettings";
 
@@ -53,6 +54,7 @@ export class Ocean implements CreateSceneClass {
     private _forceUpdateGlowIntensity: boolean;
     private _batherView: boolean;
     private readonly _batherEyeHeight = 0.4;
+    private _touchControls: BABYLON.Nullable<TouchControls>;
 
     constructor() {
         this._engine = null as any;
@@ -77,6 +79,7 @@ export class Ocean implements CreateSceneClass {
         this._glowLayer = null as any;
         this._forceUpdateGlowIntensity = true;
         this._batherView = false;
+        this._touchControls = null;
 
         this._size = 0;
         this._wavesSettings = new WavesSettings();
@@ -117,6 +120,11 @@ export class Ocean implements CreateSceneClass {
         scene.activeCameras = [this._camera, this._rttDebug.camera];
 
         this._camera.attachControl(canvas, true);
+
+        if (TouchControls.isTouchDevice()) {
+            this._touchControls = new TouchControls(canvas, () => this._setBatherView(!this._batherView));
+            this._touchControls.setBatherActive(this._batherView);
+        }
 
         const cameraUpdate = this._camera.update.bind(this._camera);
         const self = this;
@@ -235,9 +243,15 @@ export class Ocean implements CreateSceneClass {
     }
 
     private _setBatherView(enabled: boolean): void {
+        if (this._batherView === enabled) {
+            return;
+        }
+
         this._batherView = enabled;
         this._camera.speed = enabled ? 1 : 2;
         this._setCameraKeys();
+        this._touchControls?.setBatherActive(enabled);
+        this._gui?.setBatherView(enabled);
 
         if (enabled) {
             this._camera.position.y = this._buoyancy.getWaterHeight(this._camera.position) + this._batherEyeHeight;
