@@ -11,6 +11,7 @@ import babylon_buoy from "../assets/ocean/babylonBuoy.glb";
 import buoy from "../assets/ocean/buoy.glb";
 import fisher_boat from "../assets/ocean/fisher_boat.glb";
 import { CreateSceneClass } from "../createScene";
+import { BatherHud } from "./batherHud";
 import { Buoyancy } from "./buoyancy";
 import { OceanGeometry } from "./oceanGeometry";
 import { OceanGUI } from "./oceanGui";
@@ -55,6 +56,7 @@ export class Ocean implements CreateSceneClass {
     private _batherView: boolean;
     private _batherEyeHeight = 0.4;
     private _touchControls: BABYLON.Nullable<TouchControls>;
+    private _batherHud: BatherHud;
 
     constructor() {
         this._engine = null as any;
@@ -80,6 +82,7 @@ export class Ocean implements CreateSceneClass {
         this._forceUpdateGlowIntensity = true;
         this._batherView = false;
         this._touchControls = null;
+        this._batherHud = null as any;
 
         this._size = 0;
         this._wavesSettings = new WavesSettings();
@@ -125,6 +128,9 @@ export class Ocean implements CreateSceneClass {
             this._touchControls = new TouchControls(canvas, () => this._setBatherView(!this._batherView));
             this._touchControls.setBatherActive(this._batherView);
         }
+
+        this._batherHud = new BatherHud(this._parameterRead.bind(this), this._parameterChanged.bind(this));
+        this._batherHud.setBatherActive(this._batherView);
 
         const cameraUpdate = this._camera.update.bind(this._camera);
         const self = this;
@@ -252,6 +258,7 @@ export class Ocean implements CreateSceneClass {
         this._setCameraKeys();
         this._touchControls?.setBatherActive(enabled);
         this._gui?.setBatherView(enabled);
+        this._batherHud?.setBatherActive(enabled);
 
         if (enabled) {
             this._camera.position.y = this._buoyancy.getWaterHeight(this._camera.position) + this._batherEyeHeight;
