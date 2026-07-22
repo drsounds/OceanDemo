@@ -57,7 +57,8 @@ export const babylonInit = async (): Promise<void>  => {
             console.error = originalConsoleError;
         }
 
-        if (!engine.getCaps().supportComputeShaders) {
+        const caps = engine.getCaps();
+        if (!caps || !caps.supportComputeShaders) {
             throw new Error(
                 "WebGPU device/context initialization failed silently.\n" +
                 (capturedErrors.length > 0 ? "Captured log output:\n" + capturedErrors.join("\n") : "No errors were logged.")
