@@ -38,7 +38,31 @@ export const babylonInit = async (): Promise<void>  => {
                 ],
             },
         });
-        await (engine as WebGPUEngine).initAsync();
+
+        // WebGPUEngine.initAsync() swallows any error raised while setting up the
+        // WebGPU device/context internally (it only logs via BABYLON.Logger.Error and
+        // resolves anyway), which can leave the engine half-initialized and crash much
+        // later with a confusing error deep in Scene/UniformBuffer construction.
+        // Capture what it logs so a silent failure here surfaces the real cause instead.
+        const capturedErrors: string[] = [];
+        const originalConsoleError = console.error;
+        console.error = (...args: unknown[]) => {
+            capturedErrors.push(args.map((a) => (a instanceof Error ? (a.stack ?? a.message) : String(a))).join(" "));
+            originalConsoleError.apply(console, args);
+        };
+
+        try {
+            await (engine as WebGPUEngine).initAsync();
+        } finally {
+            console.error = originalConsoleError;
+        }
+
+        if (!engine.getCaps().supportComputeShaders) {
+            throw new Error(
+                "WebGPU device/context initialization failed silently.\n" +
+                (capturedErrors.length > 0 ? "Captured log output:\n" + capturedErrors.join("\n") : "No errors were logged.")
+            );
+        }
     } else {
         engine = new Engine(canvas, true);
     }
