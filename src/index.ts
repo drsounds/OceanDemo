@@ -29,7 +29,6 @@ export const babylonInit = async (): Promise<void>  => {
             deviceDescriptor: {
                 requiredFeatures: [
                     "depth-clip-control",
-                    "depth24unorm-stencil8",
                     "depth32float-stencil8",
                     "texture-compression-bc",
                     "texture-compression-etc2",

@@ -16,6 +16,7 @@ export class OceanGUI {
     private _paramRead: (name: string) => any;
     private _paramChanged: (name: string, value: any) => void;
     private _onKeyObserver: BABYLON.Nullable<BABYLON.Observer<BABYLON.KeyboardInfo>>;
+    private _batherController: any;
 
     public static LoadDAT(): Promise<void> {
         return Tools.LoadScriptAsync("https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.6.2/dat.gui.min.js");
@@ -47,6 +48,10 @@ export class OceanGUI {
 
         this._setupKeyboard();
         this._initialize(hasProceduralSky);
+    }
+
+    public setBatherView(value: boolean): void {
+        this._batherController?.setValue(value);
     }
 
     public dispose() {
@@ -100,8 +105,8 @@ export class OceanGUI {
             });
     }
 
-    private _addCheckbox(menu: any, params: any, name: string, friendlyName: string): void {
-        menu.add(params, name)
+    private _addCheckbox(menu: any, params: any, name: string, friendlyName: string): any {
+        return menu.add(params, name)
             .name(friendlyName)
             .onChange((value: any) => {
                 this._paramChanged(name, value);
@@ -135,8 +140,9 @@ export class OceanGUI {
             enableGlow: this._paramRead("enableGlow"),
             useZQSD: this._paramRead("useZQSD"),
             showDebugRTT: this._paramRead("showDebugRTT"),
+            batherView: this._paramRead("batherView"),
         };
-        
+
         const general = this._gui.addFolder("General");
 
         this._addList(general, params, "size", "Resolution", [256, 128, 64, 32]);
@@ -148,6 +154,7 @@ export class OceanGUI {
         this._addCheckbox(general, params, "enableGlow", "Enable Glow layer");
         this._addCheckbox(general, params, "useZQSD", "Use ZQSD");
         this._addCheckbox(general, params, "showDebugRTT", "Show debug RTT");
+        this._batherController = this._addCheckbox(general, params, "batherView", "Bather view (B)");
 
         general.open();
     }

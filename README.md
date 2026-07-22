@@ -6,7 +6,7 @@ Link to the demo: https://popov72.github.io/OceanDemo/dist/index.html
 
 You can also browse this demo in the Babylon.js Playground: https://playground.babylonjs.com/#YX6IB8#758
 
-Use F8 to show/hide the GUI (after you click anywhere in the rendering area to give focus to the canvas) and WASD to move.
+Use F8 to show/hide the GUI (after you click anywhere in the rendering area to give focus to the canvas) and WASD to move. Press B (or use the "Bather view" checkbox in the GUI) to drop into the water at swimmer eye-height and float on the waves. On touch devices, on-screen controls (move D-pad, up/down, sprint, and a bather toggle) appear automatically.
 
 **Note that your browser needs to support WebGPU!**
 
