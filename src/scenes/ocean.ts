@@ -168,7 +168,7 @@ export class Ocean implements CreateSceneClass {
 
         this._gui = new OceanGUI(this._useProceduralSky, scene, engine, this._parameterRead.bind(this), this._parameterChanged.bind(this));
 
-        if (location.href.indexOf("hidegui") !== -1) {
+        if (location.href.indexOf("hidegui") !== -1 || this._touchControls) {
             this._gui.visible = false;
         }
 
