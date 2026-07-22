@@ -44,17 +44,21 @@ export const babylonInit = async (): Promise<void>  => {
         // resolves anyway), which can leave the engine half-initialized and crash much
         // later with a confusing error deep in Scene/UniformBuffer construction.
         // Capture what it logs so a silent failure here surfaces the real cause instead.
+        // Note: Logger._Levels binds its "Error" entry directly to the native
+        // console.error function reference at module-load time, so reassigning
+        // window.console.error here would never actually intercept it - hook the
+        // OnNewCacheEntry callback Babylon provides for exactly this instead.
         const capturedErrors: string[] = [];
-        const originalConsoleError = console.error;
-        console.error = (...args: unknown[]) => {
-            capturedErrors.push(args.map((a) => (a instanceof Error ? (a.stack ?? a.message) : String(a))).join(" "));
-            originalConsoleError.apply(console, args);
+        const originalOnNewCacheEntry = BABYLON.Logger.OnNewCacheEntry;
+        BABYLON.Logger.OnNewCacheEntry = (entry: string) => {
+            capturedErrors.push(entry.replace(/<[^>]+>/g, ""));
+            originalOnNewCacheEntry?.(entry);
         };
 
         try {
             await (engine as WebGPUEngine).initAsync();
         } finally {
-            console.error = originalConsoleError;
+            BABYLON.Logger.OnNewCacheEntry = originalOnNewCacheEntry;
         }
 
         const caps = engine.getCaps();
