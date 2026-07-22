@@ -21,6 +21,24 @@ export const babylonInit = async (): Promise<void>  => {
     // Generate the BABYLON 3D engine
     //const engine = new Engine(canvas, true); 
 
+    // Compatibility shim: GPUAdapter.requestAdapterInfo() is a deprecated async method
+    // that newer browsers (e.g. recent Android Chrome builds) have already removed in
+    // favor of a synchronous `.info` property, but this version of @babylonjs/core still
+    // calls the old method unconditionally during WebGPUEngine.initAsync(), crashing WebGPU
+    // init outright on browsers that no longer have it. Wrap requestAdapter() so any
+    // adapter missing the old method gets it back, backed by the new property.
+    const gpu = (navigator as any).gpu;
+    if (gpu && typeof gpu.requestAdapter === "function") {
+        const originalRequestAdapter = gpu.requestAdapter.bind(gpu);
+        gpu.requestAdapter = async (...args: unknown[]) => {
+            const adapter = await originalRequestAdapter(...args);
+            if (adapter && typeof adapter.requestAdapterInfo !== "function" && "info" in adapter) {
+                adapter.requestAdapterInfo = () => Promise.resolve(adapter.info);
+            }
+            return adapter;
+        };
+    }
+
     let engine: Engine;
     const webgpuSupported = await WebGPUEngine.IsSupportedAsync;
 
